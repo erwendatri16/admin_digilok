@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIGILOK — Admin Panel</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -23,8 +24,8 @@
     <div class="field">
       <label>Password</label>
       <div class="password-wrapper" style="position: relative;">
-        <input type="password" id="login-password" placeholder="••••••••" style="padding-right: 40px;" />
-        <button type="button" onclick="window.toggleLoginPassword()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 0;">
+        <input type="password" id="login-password" placeholder="••••••••" style="padding-right: 40px; width: 100%;" />
+        <button type="button" onclick="toggleLoginPassword()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 0; z-index: 10;">
           <i class="fas fa-eye" id="toggle-password-icon"></i>
         </button>
       </div>
@@ -267,7 +268,9 @@
       </div>
     </div>
 
-  </div></div><div class="modal-overlay hidden" id="modal-reject">
+  </div></div>
+
+<div class="modal-overlay hidden" id="modal-reject">
   <div class="modal" style="max-width:420px;">
     <h2><i class="fas fa-xmark-circle" style="color:var(--danger)"></i> Tolak Pengajuan</h2>
     <p id="reject-modal-name" style="color:var(--text-muted);font-size:13px;margin-bottom:16px;"></p>
@@ -327,6 +330,27 @@
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;" id="internship-detail-actions"></div>
   </div>
 </div>
+
+<script>
+  function toggleLoginPassword() {
+    const passwordInput = document.getElementById('login-password');
+    const icon = document.getElementById('toggle-password-icon');
+    
+    if (!passwordInput) return; // Pengaman jika elemen belum siap
+    
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      if (icon) {
+        icon.className = 'fas fa-eye-slash'; // Berubah menjadi mata dicoret
+      }
+    } else {
+      passwordInput.type = 'password';
+      if (icon) {
+        icon.className = 'fas fa-eye'; // Kembali menjadi mata biasa
+      }
+    }
+  }
+</script>
 
 <script type="module" src="app.js"></script>
 </body>
