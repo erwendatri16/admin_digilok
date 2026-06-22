@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIGILOK — Admin Panel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo-icon-big"><i class="fas fa-shield-halved"></i></div>
+    <h1>DIGILOK Admin</h1>
+    <p>Masuk ke panel administrasi sistem</p>
+    <div class="field">
+      <label>Email Admin</label>
+      <input type="email" id="login-email" placeholder="admin@diskominfotik.go.id" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">
+      <i class="fas fa-right-to-bracket"></i> Masuk ke Admin Panel
+    </button>
+    <p id="login-error" style="color:var(--danger);font-size:13px;margin-top:16px;display:none;"></p>
+  </div>
+</div>
+
+<div class="sidebar-backdrop" id="backdrop" onclick="closeSidebar()"></div>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+    <div>
+      <div class="logo-text">DIGILOK</div>
+      <div class="logo-sub">Admin Suite</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Menu Utama</div>
+    <button class="nav-item active" onclick="navigate('dashboard')">
+      <i class="fas fa-gauge-high"></i> Dashboard
+    </button>
+    <button class="nav-item" onclick="navigate('users')">
+      <i class="fas fa-users"></i> Manajemen User
+    </button>
+    <button class="nav-item" onclick="navigate('access')">
+      <i class="fas fa-user-shield"></i> Kontrol Akses & Role
+    </button>
+    <button class="nav-item" onclick="navigate('internship')">
+      <i class="fas fa-graduation-cap"></i> Manajemen Magang
+    </button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="nav-item danger" onclick="doLogout()">
+      <i class="fas fa-right-from-bracket"></i> Keluar Sistem
+    </button>
+  </div>
+</nav>
+
+<div id="main">
+  <div id="topbar">
+    <button id="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-user">
+      <button id="theme-toggle" onclick="toggleTheme()" title="Ganti Tema" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:var(--radius-sm);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:all 0.15s;">
+        <i class="fas fa-moon" id="theme-icon"></i>
+      </button>
+      <span id="topbar-email"></span>
+      <div class="topbar-avatar" id="topbar-avatar">A</div>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Ringkasan Sistem</h1>
+        <p>Pantau statistik dan aktivitas DIGILOK secara realtime</p>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(99,161,255,0.12);color:#63A1FF;"><i class="fas fa-users"></i></div>
+          <div><div class="stat-value" id="stat-users">—</div><div class="stat-label">Total Siswa</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,171,0,0.12);color:#FFAB00;"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div><div class="stat-value" id="stat-mentors">—</div><div class="stat-label">Total Mentor</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(0,212,170,0.12);color:#00D4AA;"><i class="fas fa-calendar-check"></i></div>
+          <div><div class="stat-value" id="stat-absensi">—</div><div class="stat-label">Absen Hari Ini</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.12);color:#6C63FF;"><i class="fas fa-book-open"></i></div>
+          <div><div class="stat-value" id="stat-logbook">—</div><div class="stat-label">Logbook Masuk</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,77,109,0.12);color:#FF4D6D;"><i class="fas fa-clock"></i></div>
+          <div><div class="stat-value" id="stat-pending">—</div><div class="stat-label">Pending Magang</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="card-title">Live Audit Log Sistem</div>
+            <span class="pulse-dot"></span>
+          </div>
+          <button class="btn btn-ghost" onclick="loadAuditLogs()"><i class="fas fa-rotate-right"></i> Refresh</button>
+        </div>
+        <div id="audit-log-list" style="max-height:420px;overflow-y:auto;">
+          <div class="empty"><i class="fas fa-list-ul"></i><p>Memuat log…</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <h1>Master Database User</h1>
+        <p>Kelola akun siswa, mentor, dan admin sistem</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="search-bar" style="flex:1;margin-bottom:0;">
+            <div class="search-input-wrap">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="user-search" placeholder="Cari nama atau email…" oninput="filterUsers()" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openAddUserModal()"><i class="fas fa-user-plus"></i> Tambah User</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="5"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-access">
+      <div class="page-header">
+        <h1>Kontrol Akses & Role</h1>
+        <p>Atur role, blokir akses, tugaskan mentor, dan kontrol maintenance</p>
+      </div>
+
+      <div class="maintenance-panel off" id="maintenance-panel">
+        <div style="font-size:22px;"><i class="fas fa-helmet-safety" style="color:var(--warn)"></i></div>
+        <div class="info">
+          <strong>Mode Pemeliharaan (Maintenance)</strong>
+          <span id="maintenance-desc">Kunci akses login untuk semua kecuali Admin</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="maintenance-toggle" onchange="toggleMaintenance(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="search-bar" style="flex:1;margin-bottom:0;flex-wrap:wrap;">
+            <div class="search-input-wrap">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="access-search" placeholder="Cari nama atau email…" oninput="filterAccess()" />
+            </div>
+            <select id="access-role-filter" class="field" style="margin:0;min-width:130px;" onchange="filterAccess()">
+              <option value="">Semua Role</option>
+              <option value="user">User (Siswa)</option>
+              <option value="mentor">Mentor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Mentor</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="access-tbody">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-internship">
+      <div class="page-header">
+        <h1>Manajemen Magang</h1>
+        <p>Kelola kuota dan pengajuan magang masuk</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-sliders" style="color:var(--primary)"></i> Pengaturan Kuota Magang</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div class="field" style="margin:0;flex:1;min-width:180px;">
+            <label>Maksimal Penerimaan Magang</label>
+            <input type="number" id="quota-input" min="1" placeholder="Contoh: 20" />
+          </div>
+          <button class="btn btn-primary" style="margin-top:18px;" onclick="saveQuota()"><i class="fas fa-floppy-disk"></i> Simpan Kuota</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Daftar Pengajuan Magang</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="internship-status-filter" class="field" style="margin:0;min-width:130px;" onchange="filterInternship()">
+              <option value="">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="diterima">Diterima</option>
+              <option value="ditolak">Ditolak</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadInternship()"><i class="fas fa-rotate-right"></i></button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No. Pengajuan</th>
+                <th>Nama Pemohon</th>
+                <th>Sekolah/Instansi</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="internship-tbody">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div></div><div class="modal-overlay hidden" id="modal-reject">
+  <div class="modal" style="max-width:420px;">
+    <h2><i class="fas fa-xmark-circle" style="color:var(--danger)"></i> Tolak Pengajuan</h2>
+    <p id="reject-modal-name" style="color:var(--text-muted);font-size:13px;margin-bottom:16px;"></p>
+    <div class="field">
+      <label>Alasan Penolakan <span style="color:var(--danger)">*</span></label>
+      <textarea id="reject-alasan" rows="4" placeholder="Tulis alasan penolakan…" style="resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reject')">Batal</button>
+      <button class="btn btn-danger" onclick="submitReject()"><i class="fas fa-xmark"></i> Konfirmasi Tolak</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+<div class="modal-overlay hidden" id="modal-add-user">
+  <div class="modal">
+    <h2><i class="fas fa-user-plus" style="color:var(--primary)"></i> Registrasi User Baru</h2>
+    <div class="field"><label>Nama Lengkap</label><input type="text" id="new-name" placeholder="Nama lengkap" /></div>
+    <div class="field"><label>Email</label><input type="email" id="new-email" placeholder="email@example.com" /></div>
+    <div class="field"><label>Password</label><input type="password" id="new-pass" placeholder="Min. 6 karakter" /></div>
+    <div class="field">
+      <label>Role</label>
+      <select id="new-role">
+        <option value="user">User (Siswa)</option>
+        <option value="mentor">Mentor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-user')">Batal</button>
+      <button class="btn btn-primary" onclick="addUser()"><i class="fas fa-floppy-disk"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-assign-mentor">
+  <div class="modal">
+    <h2><i class="fas fa-chalkboard-teacher" style="color:var(--accent)"></i> Tugaskan Mentor</h2>
+    <p id="assign-mentor-user-name" style="color:var(--text-muted);font-size:13px;margin-bottom:20px;"></p>
+    <div class="field">
+      <label>Pilih Mentor</label>
+      <select id="assign-mentor-select"></select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-assign-mentor')">Batal</button>
+      <button class="btn btn-accent" onclick="saveMentorAssign()"><i class="fas fa-link"></i> Tugaskan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-internship-detail">
+  <div class="modal" style="max-width:520px;">
+    <h2><i class="fas fa-file-lines" style="color:var(--primary)"></i> Detail Pengajuan Magang</h2>
+    <div id="internship-detail-content" style="font-size:13.5px;color:var(--text-muted);line-height:1.8;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;" id="internship-detail-actions"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
