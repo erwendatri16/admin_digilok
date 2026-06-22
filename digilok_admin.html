@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DIGILOK — Admin Panel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #6C63FF;
+    --primary-soft: rgba(108,99,255,0.12);
+    --accent: #00D4AA;
+    --accent-soft: rgba(0,212,170,0.12);
+    --danger: #FF4D6D;
+    --danger-soft: rgba(255,77,109,0.12);
+    --warn: #FFAB00;
+    --warn-soft: rgba(255,171,0,0.12);
+    --sidebar-w: 240px;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  /* DARK THEME (default) */
+  :root, [data-theme="dark"] {
+    --bg: #0F1117;
+    --surface: #16181F;
+    --surface2: #1E2028;
+    --border: #2A2D38;
+    --text: #E8EAF0;
+    --text-muted: #7B7F8E;
+    --text-dim: #4A4E5C;
+    --sidebar-bg: #16181F;
+    --modal-bg: rgba(0,0,0,0.65);
+  }
+
+  /* LIGHT THEME */
+  [data-theme="light"] {
+    --bg: #F0F2F8;
+    --surface: #FFFFFF;
+    --surface2: #F4F6FA;
+    --border: #DDE1EE;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --sidebar-bg: #1E1B4B;
+    --modal-bg: rgba(0,0,0,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sidebar-logo .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff;
+  }
+  .sidebar-logo .logo-text { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; color: #fff; }
+  .sidebar-logo .logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+
+  .sidebar-section {
+    padding: 20px 12px 0;
+  }
+  .sidebar-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+    color: rgba(255,255,255,0.25); padding: 0 8px 8px;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; margin-bottom: 2px;
+    color: rgba(255,255,255,0.5); font-size: 13.5px; font-weight: 500;
+    transition: all 0.15s;
+    user-select: none;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item i { width: 16px; text-align: center; font-size: 14px; }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+  .nav-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+  .nav-item.danger { color: var(--danger); }
+  .nav-item.danger:hover { background: var(--danger-soft); }
+
+  .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+  /* ── MAIN ── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    height: 60px; min-height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+  }
+  .topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-muted);
+  }
+  .topbar-avatar {
+    width: 32px; height: 32px; background: var(--primary);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  #hamburger { display: none; background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; }
+
+  /* ── CONTENT ── */
+  #content {
+    flex: 1; overflow-y: auto; padding: 28px;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%; max-width: 400px;
+    text-align: center;
+  }
+  .login-card .logo-icon-big {
+    width: 64px; height: 64px;
+    background: var(--primary);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff;
+    margin: 0 auto 20px;
+  }
+  .login-card h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .login-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 32px; }
+
+  /* ── FORM ELEMENTS ── */
+  .field { margin-bottom: 16px; text-align: left; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); border-radius: var(--radius-sm); padding: 11px 14px;
+    font-size: 14px; font-family: 'Inter', sans-serif;
+    transition: border 0.15s; outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--primary); }
+  .field select { cursor: pointer; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #5a52e0; }
+  .btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-warn { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn); }
+  .btn-warn:hover { background: var(--warn); color: #111; }
+  .btn-accent { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+  .btn-accent:hover { background: var(--accent); color: #111; }
+  .btn-ghost { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+  .btn-full { width: 100%; justify-content: center; padding: 13px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .stat-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .stat-value { font-size: 26px; font-weight: 800; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 14px; vertical-align: middle; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .badge-green { background: rgba(0,212,170,0.12); color: #00D4AA; }
+  .badge-red { background: var(--danger-soft); color: var(--danger); }
+  .badge-warn { background: var(--warn-soft); color: var(--warn); }
+  .badge-blue { background: rgba(99,161,255,0.12); color: #63A1FF; }
+  .badge-purple { background: var(--primary-soft); color: var(--primary); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: var(--modal-bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500; padding: 20px;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; width: 100%; max-width: 440px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    display: flex; gap: 12px; margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .search-input-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-input-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 13px; }
+  .search-input-wrap input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); border-radius: var(--radius-sm); padding: 10px 14px 10px 36px;
+    font-size: 13.5px; outline: none; font-family: 'Inter', sans-serif;
+  }
+  .search-input-wrap input:focus { border-color: var(--primary); }
+
+  /* ── AUDIT LOG ── */
+  .log-entry {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border); align-items: flex-start;
+    font-size: 13px;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; padding-top: 2px; }
+  .log-detail { flex: 1; color: var(--text-muted); }
+  .log-detail strong { color: var(--text); }
+
+  /* ── TOGGLE ── */
+  .toggle-wrap { display: flex; align-items: center; gap: 12px; }
+  .toggle {
+    position: relative; width: 44px; height: 24px;
+    cursor: pointer; user-select: none;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--surface2);
+    border-radius: 24px; border: 1px solid var(--border);
+    transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; background: var(--text-muted);
+    border-radius: 50%; left: 2px; top: 2px;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--warn); border-color: var(--warn); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 18px;
+    font-size: 13.5px; font-weight: 500;
+    z-index: 9999; transform: translateY(100px); opacity: 0;
+    transition: all 0.25s ease; max-width: 320px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: var(--accent); color: var(--accent); }
+  #toast.error { border-color: var(--danger); color: var(--danger); }
+
+  /* ── PULSE DOT ── */
+  .pulse-dot {
+    width: 8px; height: 8px; background: var(--accent);
+    border-radius: 50%; display: inline-block;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty i { font-size: 40px; margin-bottom: 16px; opacity: 0.3; display: block; }
+  .empty p { font-size: 14px; }
+
+  /* ── PAGE SECTIONS ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 22px; font-weight: 800; }
+  .page-header p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+  /* ── MAINTENANCE PANEL ── */
+  .maintenance-panel {
+    background: var(--surface); border: 1px solid var(--warn);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+  }
+  .maintenance-panel.off { border-color: var(--border); }
+  .maintenance-panel .info { flex: 1; }
+  .maintenance-panel .info strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .maintenance-panel .info span { font-size: 12px; color: var(--text-muted); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── MOBILE ── */
+  .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+  @media (max-width: 768px) {
+    #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    .sidebar-backdrop.show { display: block; }
+    #hamburger { display: flex; }
+    #content { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo-icon-big"><i class="fas fa-shield-halved"></i></div>
+    <h1>DIGILOK Admin</h1>
+    <p>Masuk ke panel administrasi sistem</p>
+    <div class="field">
+      <label>Email Admin</label>
+      <input type="email" id="login-email" placeholder="admin@diskominfotik.go.id" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">
+      <i class="fas fa-right-to-bracket"></i> Masuk ke Admin Panel
+    </button>
+    <p id="login-error" style="color:var(--danger);font-size:13px;margin-top:16px;display:none;"></p>
+  </div>
+</div>
+
+<!-- SIDEBAR BACKDROP (mobile) -->
+<div class="sidebar-backdrop" id="backdrop" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+    <div>
+      <div class="logo-text">DIGILOK</div>
+      <div class="logo-sub">Admin Suite</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Menu Utama</div>
+    <button class="nav-item active" onclick="navigate('dashboard')">
+      <i class="fas fa-gauge-high"></i> Dashboard
+    </button>
+    <button class="nav-item" onclick="navigate('users')">
+      <i class="fas fa-users"></i> Manajemen User
+    </button>
+    <button class="nav-item" onclick="navigate('access')">
+      <i class="fas fa-user-shield"></i> Kontrol Akses & Role
+    </button>
+    <button class="nav-item" onclick="navigate('internship')">
+      <i class="fas fa-graduation-cap"></i> Manajemen Magang
+    </button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="nav-item danger" onclick="doLogout()">
+      <i class="fas fa-right-from-bracket"></i> Keluar Sistem
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN AREA -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <button id="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-user">
+      <button id="theme-toggle" onclick="toggleTheme()" title="Ganti Tema" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:var(--radius-sm);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:all 0.15s;">
+        <i class="fas fa-moon" id="theme-icon"></i>
+      </button>
+      <span id="topbar-email"></span>
+      <div class="topbar-avatar" id="topbar-avatar">A</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Ringkasan Sistem</h1>
+        <p>Pantau statistik dan aktivitas DIGILOK secara realtime</p>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(99,161,255,0.12);color:#63A1FF;"><i class="fas fa-users"></i></div>
+          <div><div class="stat-value" id="stat-users">—</div><div class="stat-label">Total Siswa</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,171,0,0.12);color:#FFAB00;"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div><div class="stat-value" id="stat-mentors">—</div><div class="stat-label">Total Mentor</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(0,212,170,0.12);color:#00D4AA;"><i class="fas fa-calendar-check"></i></div>
+          <div><div class="stat-value" id="stat-absensi">—</div><div class="stat-label">Absen Hari Ini</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.12);color:#6C63FF;"><i class="fas fa-book-open"></i></div>
+          <div><div class="stat-value" id="stat-logbook">—</div><div class="stat-label">Logbook Masuk</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,77,109,0.12);color:#FF4D6D;"><i class="fas fa-clock"></i></div>
+          <div><div class="stat-value" id="stat-pending">—</div><div class="stat-label">Pending Magang</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="card-title">Live Audit Log Sistem</div>
+            <span class="pulse-dot"></span>
+          </div>
+          <button class="btn btn-ghost" onclick="loadAuditLogs()"><i class="fas fa-rotate-right"></i> Refresh</button>
+        </div>
+        <div id="audit-log-list" style="max-height:420px;overflow-y:auto;">
+          <div class="empty"><i class="fas fa-list-ul"></i><p>Memuat log…</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <h1>Master Database User</h1>
+        <p>Kelola akun siswa, mentor, dan admin sistem</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="search-bar" style="flex:1;margin-bottom:0;">
+            <div class="search-input-wrap">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="user-search" placeholder="Cari nama atau email…" oninput="filterUsers()" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openAddUserModal()"><i class="fas fa-user-plus"></i> Tambah User</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="5"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACCESS CONTROL ── -->
+    <div class="page" id="page-access">
+      <div class="page-header">
+        <h1>Kontrol Akses & Role</h1>
+        <p>Atur role, blokir akses, tugaskan mentor, dan kontrol maintenance</p>
+      </div>
+
+      <div class="maintenance-panel off" id="maintenance-panel">
+        <div style="font-size:22px;"><i class="fas fa-helmet-safety" style="color:var(--warn)"></i></div>
+        <div class="info">
+          <strong>Mode Pemeliharaan (Maintenance)</strong>
+          <span id="maintenance-desc">Kunci akses login untuk semua kecuali Admin</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="maintenance-toggle" onchange="toggleMaintenance(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="search-bar" style="flex:1;margin-bottom:0;flex-wrap:wrap;">
+            <div class="search-input-wrap">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="access-search" placeholder="Cari nama atau email…" oninput="filterAccess()" />
+            </div>
+            <select id="access-role-filter" class="field" style="margin:0;min-width:130px;" onchange="filterAccess()">
+              <option value="">Semua Role</option>
+              <option value="user">User (Siswa)</option>
+              <option value="mentor">Mentor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Mentor</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="access-tbody">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTERNSHIP ── -->
+    <div class="page" id="page-internship">
+      <div class="page-header">
+        <h1>Manajemen Magang</h1>
+        <p>Kelola kuota dan pengajuan magang masuk</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-sliders" style="color:var(--primary)"></i> Pengaturan Kuota Magang</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div class="field" style="margin:0;flex:1;min-width:180px;">
+            <label>Maksimal Penerimaan Magang</label>
+            <input type="number" id="quota-input" min="1" placeholder="Contoh: 20" />
+          </div>
+          <button class="btn btn-primary" style="margin-top:18px;" onclick="saveQuota()"><i class="fas fa-floppy-disk"></i> Simpan Kuota</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Daftar Pengajuan Magang</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="internship-status-filter" class="field" style="margin:0;min-width:130px;" onchange="filterInternship()">
+              <option value="">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="diterima">Diterima</option>
+              <option value="ditolak">Ditolak</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadInternship()"><i class="fas fa-rotate-right"></i></button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No. Pengajuan</th>
+                <th>Nama Pemohon</th>
+                <th>Sekolah/Instansi</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="internship-tbody">
+              <tr><td colspan="6"><div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat…</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL: Tolak Pengajuan -->
+<div class="modal-overlay hidden" id="modal-reject">
+  <div class="modal" style="max-width:420px;">
+    <h2><i class="fas fa-xmark-circle" style="color:var(--danger)"></i> Tolak Pengajuan</h2>
+    <p id="reject-modal-name" style="color:var(--text-muted);font-size:13px;margin-bottom:16px;"></p>
+    <div class="field">
+      <label>Alasan Penolakan <span style="color:var(--danger)">*</span></label>
+      <textarea id="reject-alasan" rows="4" placeholder="Tulis alasan penolakan…" style="resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reject')">Batal</button>
+      <button class="btn btn-danger" onclick="submitReject()"><i class="fas fa-xmark"></i> Konfirmasi Tolak</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
+<!-- MODAL: Add User -->
+<div class="modal-overlay hidden" id="modal-add-user">
+  <div class="modal">
+    <h2><i class="fas fa-user-plus" style="color:var(--primary)"></i> Registrasi User Baru</h2>
+    <div class="field"><label>Nama Lengkap</label><input type="text" id="new-name" placeholder="Nama lengkap" /></div>
+    <div class="field"><label>Email</label><input type="email" id="new-email" placeholder="email@example.com" /></div>
+    <div class="field"><label>Password</label><input type="password" id="new-pass" placeholder="Min. 6 karakter" /></div>
+    <div class="field">
+      <label>Role</label>
+      <select id="new-role">
+        <option value="user">User (Siswa)</option>
+        <option value="mentor">Mentor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-user')">Batal</button>
+      <button class="btn btn-primary" onclick="addUser()"><i class="fas fa-floppy-disk"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Assign Mentor -->
+<div class="modal-overlay hidden" id="modal-assign-mentor">
+  <div class="modal">
+    <h2><i class="fas fa-chalkboard-teacher" style="color:var(--accent)"></i> Tugaskan Mentor</h2>
+    <p id="assign-mentor-user-name" style="color:var(--text-muted);font-size:13px;margin-bottom:20px;"></p>
+    <div class="field">
+      <label>Pilih Mentor</label>
+      <select id="assign-mentor-select"></select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-assign-mentor')">Batal</button>
+      <button class="btn btn-accent" onclick="saveMentorAssign()"><i class="fas fa-link"></i> Tugaskan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Internship Detail -->
+<div class="modal-overlay hidden" id="modal-internship-detail">
+  <div class="modal" style="max-width:520px;">
+    <h2><i class="fas fa-file-lines" style="color:var(--primary)"></i> Detail Pengajuan Magang</h2>
+    <div id="internship-detail-content" style="font-size:13.5px;color:var(--text-muted);line-height:1.8;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;" id="internship-detail-actions"></div>
+  </div>
+</div>
+
+<script type="module">
+// ══════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════════════════
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL  = 'https://ndtatoyctayebjszwvpz.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kdGF0b3ljdGF5ZWJqc3p3dnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTUwNzIsImV4cCI6MjA5MzM3MTA3Mn0.eZ8ceZCDsNkIIKJZ6dWqY2TSPQB_7IziTXzkuf4VPpU';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let allUsers = [];
+let allMentors = [];
+let allInternships = [];
+let assignTargetUserId = null;
+let detailInternshipId = null;
+
+// ══════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    showApp(session.user);
+  }
+}
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-error');
+  err.style.display = 'none';
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses…';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = 'Login gagal: ' + (error.message === 'Invalid login credentials' ? 'Email atau password salah.' : error.message);
+    err.style.display = 'block';
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Masuk ke Admin Panel';
+    return;
+  }
+
+  // Cek apakah role = admin
+  const { data: userData } = await sb.from('users').select('role').eq('id', data.user.id).maybeSingle();
+  if (!userData || userData.role !== 'admin') {
+    await sb.auth.signOut();
+    err.textContent = 'Akses ditolak: Akun ini bukan admin.';
+    err.style.display = 'block';
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Masuk ke Admin Panel';
+    return;
+  }
+
+  showApp(data.user);
+};
+
+function showApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  const label = user.email.split('@')[0];
+  document.getElementById('topbar-email').textContent = user.email;
+  document.getElementById('topbar-avatar').textContent = label[0].toUpperCase();
+  navigate('dashboard');
+}
+
+window.doLogout = async () => {
+  await sb.auth.signOut();
+  location.reload();
+};
+
+// ══════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════
+const pageLabels = {
+  dashboard: 'Dashboard',
+  users: 'Manajemen User',
+  access: 'Kontrol Akses & Role',
+  internship: 'Manajemen Magang',
+};
+
+window.navigate = (page) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().toLowerCase().includes(pageLabels[page].toLowerCase().split(' ')[0].toLowerCase())) {
+      n.classList.add('active');
+    }
+  });
+  document.getElementById('topbar-title').textContent = pageLabels[page];
+  closeSidebar();
+
+  if (page === 'dashboard') loadDashboard();
+  if (page === 'users') loadUsers();
+  if (page === 'access') loadAccess();
+  if (page === 'internship') loadInternship();
+};
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [usersRes, absensiRes, logbookRes, pendingRes] = await Promise.all([
+    sb.from('users').select('role'),
+    sb.from('absensi').select('id').eq('tanggal', today),
+    sb.from('logbook').select('id').eq('tanggal', today),
+    sb.from('internship_applications').select('id').eq('status', 'pending'),
+  ]);
+
+  const users = usersRes.data || [];
+  const siswa = users.filter(u => u.role === 'user').length;
+  const mentor = users.filter(u => u.role === 'mentor').length;
+
+  document.getElementById('stat-users').textContent = siswa;
+  document.getElementById('stat-mentors').textContent = mentor;
+  document.getElementById('stat-absensi').textContent = (absensiRes.data || []).length;
+  document.getElementById('stat-logbook').textContent = (logbookRes.data || []).length;
+  document.getElementById('stat-pending').textContent = (pendingRes.data || []).length;
+
+  loadAuditLogs();
+}
+
+window.loadAuditLogs = async () => {
+  const el = document.getElementById('audit-log-list');
+  el.innerHTML = '<div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Memuat log…</p></div>';
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await sb.from('audit_logs')
+    .select('*').gte('created_at', today)
+    .order('created_at', { ascending: false }).limit(60);
+
+  if (error || !data?.length) {
+    el.innerHTML = '<div class="empty"><i class="fas fa-list-ul"></i><p>Belum ada aktivitas tercatat hari ini.</p></div>';
+    return;
+  }
+
+  el.innerHTML = data.map(log => {
+    const time = (log.created_at || '').slice(11, 19);
+    const aksi = log.aksi || 'LOG';
+    let badgeCls = 'badge-blue';
+    if (aksi.includes('HAPUS') || aksi.includes('BLOKIR')) badgeCls = 'badge-red';
+    else if (aksi.includes('AKTIF') || aksi.includes('TAMBAH')) badgeCls = 'badge-green';
+    else if (aksi.includes('UBAH') || aksi.includes('RESET')) badgeCls = 'badge-warn';
+    return `<div class="log-entry">
+      <span class="log-time">${time}</span>
+      <span class="badge ${badgeCls}" style="flex-shrink:0;">${aksi}</span>
+      <div class="log-detail"><strong>${log.detail || '—'}</strong> <span>· oleh ${log.admin_name || 'Admin'}</span></div>
+    </div>`;
+  }).join('');
+};
+
+// ══════════════════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════════════════
+async function loadUsers() {
+  const { data } = await sb.from('users').select('*').order('name');
+  allUsers = data || [];
+  renderUsers(allUsers);
+}
+
+window.filterUsers = () => {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  renderUsers(allUsers.filter(u =>
+    (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
+  ));
+};
+
+function renderUsers(list) {
+  const tb = document.getElementById('users-tbody');
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="5"><div class="empty"><i class="fas fa-users-slash"></i><p>Tidak ada data.</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map(u => {
+    const roleBadge = u.role === 'admin' ? 'badge-purple' : u.role === 'mentor' ? 'badge-warn' : 'badge-blue';
+    const statusBadge = u.is_active !== false ? 'badge-green' : 'badge-red';
+    const statusText = u.is_active !== false ? 'Aktif' : 'Diblokir';
+    return `<tr>
+      <td><strong>${esc(u.name || '-')}</strong></td>
+      <td style="color:var(--text-muted)">${esc(u.email || '-')}</td>
+      <td><span class="badge ${roleBadge}">${u.role || 'user'}</span></td>
+      <td><span class="badge ${statusBadge}">${statusText}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-warn" style="padding:6px 10px;font-size:12px;" onclick="openResetPass('${u.id}','${esc(u.name)}','${esc(u.email)}')">
+          <i class="fas fa-key"></i> Reset
+        </button>
+        <button class="btn btn-danger" style="padding:6px 10px;font-size:12px;margin-left:6px;" onclick="deleteUser('${u.id}','${esc(u.name)}')">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.openAddUserModal = () => {
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-email').value = '';
+  document.getElementById('new-pass').value = '';
+  openModal('modal-add-user');
+};
+
+window.addUser = async () => {
+  const name  = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const pass  = document.getElementById('new-pass').value;
+  const role  = document.getElementById('new-role').value;
+  if (!name || !email || !pass) return showToast('Semua kolom wajib diisi!', 'error');
+
+  const { data: authData, error } = await sb.auth.signUp({ email, password: pass });
+  if (error) return showToast('Gagal: ' + error.message, 'error');
+
+  await sb.from('users').insert({ id: authData.user.id, name, email, role, is_active: true });
+  await insertAuditLog('TAMBAH USER', `Mendaftarkan user baru: ${name}`);
+  closeModal('modal-add-user');
+  showToast('User baru berhasil ditambahkan!');
+  loadUsers();
+};
+
+window.openResetPass = (id, name, email) => {
+  const np = prompt(`Reset password untuk ${name}\n(${email})\n\nMasukkan password baru (min. 6 karakter):`);
+  if (!np || np.length < 6) { if (np !== null) showToast('Password minimal 6 karakter!', 'error'); return; }
+  // Catat audit log saja (actual reset butuh service_role key)
+  insertAuditLog('RESET PASSWORD', `Admin mereset password akun ${email} (${name})`);
+  showToast(`Permintaan reset password untuk ${name} dicatat. Proses via Supabase Auth dashboard.`);
+};
+
+window.deleteUser = async (id, name) => {
+  if (!confirm(`Hapus permanen user "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+  const { error } = await sb.from('users').delete().eq('id', id);
+  if (error) return showToast('Gagal menghapus: ' + error.message, 'error');
+  await insertAuditLog('HAPUS USER', `Menghapus user ${name} dari master data`);
+  showToast('User berhasil dihapus.');
+  loadUsers();
+};
+
+// ══════════════════════════════════════════════════════════
+// ACCESS CONTROL
+// ══════════════════════════════════════════════════════════
+async function loadAccess() {
+  // Maintenance status
+  const { data: maint } = await sb.from('system_settings').select('is_active').eq('id', 'maintenance_mode').maybeSingle();
+  const isOn = maint?.is_active ?? false;
+  document.getElementById('maintenance-toggle').checked = isOn;
+  updateMaintenanceUI(isOn);
+
+  // Users
+  const { data } = await sb.from('users').select('*').order('name');
+  allUsers = data || [];
+  allMentors = allUsers.filter(u => u.role === 'mentor');
+  renderAccess(allUsers);
+}
+
+window.filterAccess = () => {
+  const q    = document.getElementById('access-search').value.toLowerCase();
+  const role = document.getElementById('access-role-filter').value;
+  renderAccess(allUsers.filter(u => {
+    const nm = (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+    const rm = !role || u.role === role;
+    return nm && rm;
+  }));
+};
+
+function renderAccess(list) {
+  const tb = document.getElementById('access-tbody');
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-user-slash"></i><p>Tidak ada data.</p></div></td></tr>';
+    return;
+  }
+
+  const mentorMap = {};
+  allMentors.forEach(m => { mentorMap[m.id] = m.name; });
+
+  tb.innerHTML = list.map(u => {
+    const active = u.is_active !== false;
+    const statusBadge = active ? 'badge-green' : 'badge-red';
+    const roleBadge = u.role === 'admin' ? 'badge-purple' : u.role === 'mentor' ? 'badge-warn' : 'badge-blue';
+    const mentorName = u.mentor_id ? (mentorMap[u.mentor_id] || 'Tersimpan') : '<span style="color:var(--text-dim)">—</span>';
+    const roleOptions = ['user','mentor','admin'].map(r =>
+      `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r.charAt(0).toUpperCase()+r.slice(1)}</option>`
+    ).join('');
+
+    return `<tr>
+      <td><strong>${esc(u.name || '-')}</strong><br/><span style="font-size:11px;color:var(--text-muted)">${esc(u.email || '')}</span></td>
+      <td style="display:none">${esc(u.email || '')}</td>
+      <td><select class="field" style="margin:0;padding:6px 10px;font-size:12px;" onchange="changeRole('${u.id}','${u.role}',this.value,'${esc(u.name)}')">${roleOptions}</select></td>
+      <td>${u.role === 'user' ? `<button class="btn btn-accent" style="padding:5px 10px;font-size:11px;" onclick="openAssignMentor('${u.id}','${esc(u.name)}','${u.mentor_id||''}')"><i class="fas fa-link"></i> ${u.mentor_id ? 'Ganti' : 'Assign'}</button>` : mentorName}</td>
+      <td><span class="badge ${statusBadge}">${active ? 'Aktif' : 'Blokir'}</span></td>
+      <td>
+        <button class="btn ${active ? 'btn-danger' : 'btn-accent'}" style="padding:6px 10px;font-size:12px;" onclick="toggleStatus('${u.id}',${active},'${esc(u.name)}')">
+          <i class="fas fa-${active ? 'lock' : 'lock-open'}"></i> ${active ? 'Blokir' : 'Aktifkan'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.changeRole = async (id, oldRole, newRole, name) => {
+  if (oldRole === newRole) return;
+  const { error } = await sb.from('users').update({ role: newRole }).eq('id', id);
+  if (error) return showToast('Gagal ubah role: ' + error.message, 'error');
+  await insertAuditLog('UBAH ROLE', `Mengubah role ${name} dari ${oldRole} → ${newRole}`);
+  showToast(`Role ${name} diubah ke ${newRole}.`);
+  loadAccess();
+};
+
+window.toggleStatus = async (id, current, name) => {
+  const newStatus = !current;
+  const { error } = await sb.from('users').update({ is_active: newStatus }).eq('id', id);
+  if (error) return showToast('Gagal: ' + error.message, 'error');
+  await insertAuditLog(newStatus ? 'STATUS: AKTIF' : 'STATUS: BLOKIR', `Mengubah status akses ${name}`);
+  showToast(`Akses ${name} ${newStatus ? 'diaktifkan' : 'diblokir'}.`);
+  loadAccess();
+};
+
+window.openAssignMentor = (userId, userName, currentMentorId) => {
+  assignTargetUserId = userId;
+  document.getElementById('assign-mentor-user-name').textContent = `Menugaskan mentor untuk: ${userName}`;
+  const sel = document.getElementById('assign-mentor-select');
+  sel.innerHTML = allMentors.length
+    ? allMentors.map(m => `<option value="${m.id}" ${m.id === currentMentorId ? 'selected' : ''}>${esc(m.name)}</option>`).join('')
+    : '<option disabled>Belum ada mentor di database</option>';
+  openModal('modal-assign-mentor');
+};
+
+window.saveMentorAssign = async () => {
+  const mentorId = document.getElementById('assign-mentor-select').value;
+  if (!mentorId) return;
+  const { error } = await sb.from('users').update({ mentor_id: mentorId }).eq('id', assignTargetUserId);
+  if (error) return showToast('Gagal: ' + error.message, 'error');
+  showToast('Mentor berhasil ditugaskan!');
+  closeModal('modal-assign-mentor');
+  loadAccess();
+};
+
+window.toggleMaintenance = async (val) => {
+  const { error } = await sb.from('system_settings').update({ is_active: val }).eq('id', 'maintenance_mode');
+  if (error) { showToast('Gagal update maintenance: ' + error.message, 'error'); return; }
+  updateMaintenanceUI(val);
+  await insertAuditLog('MAINTENANCE ' + (val ? 'ON' : 'OFF'), `Mode pemeliharaan ${val ? 'diaktifkan' : 'dinonaktifkan'}`);
+  showToast(`Mode pemeliharaan ${val ? 'AKTIF — hanya admin bisa login.' : 'dinonaktifkan.'}`);
+};
+
+function updateMaintenanceUI(on) {
+  const panel = document.getElementById('maintenance-panel');
+  document.getElementById('maintenance-desc').textContent = on
+    ? 'Aktif — hanya Admin yang bisa login ke sistem.'
+    : 'Kunci akses login untuk semua kecuali Admin';
+  panel.classList.toggle('off', !on);
+  panel.style.borderColor = on ? 'var(--warn)' : 'var(--border)';
+}
+
+// ══════════════════════════════════════════════════════════
+// INTERNSHIP
+// Tabel: internship_applications
+// Kolom: nomor_pengajuan, nama_lengkap, asal_kampus, jurusan,
+//        email, no_hp, periode_mulai, periode_selesai,
+//        status (pending / diterima / ditolak), alasan_penolakan,
+//        url_surat_pengantar, url_ktm, url_cv, url_surat_balasan
+// ══════════════════════════════════════════════════════════
+window.loadInternship = async () => {
+  // Load quota
+  const { data: settings } = await sb.from('internship_settings').select('max_quota').eq('id', 1).maybeSingle();
+  document.getElementById('quota-input').value = settings?.max_quota ?? 20;
+
+  // Load pengajuan — nama tabel yang benar
+  const { data, error } = await sb.from('internship_applications').select('*').order('created_at', { ascending: false });
+  if (error) {
+    showToast('Gagal memuat data: ' + error.message, 'error');
+    document.getElementById('internship-tbody').innerHTML =
+      `<tr><td colspan="6"><div class="empty"><i class="fas fa-circle-exclamation"></i><p>Error: ${error.message}</p></div></td></tr>`;
+    return;
+  }
+  allInternships = data || [];
+  filterInternship();
+};
+
+window.filterInternship = () => {
+  const status = document.getElementById('internship-status-filter').value;
+  const filtered = status ? allInternships.filter(i => i.status === status) : allInternships;
+  renderInternship(filtered);
+};
+
+function renderInternship(list) {
+  const tb = document.getElementById('internship-tbody');
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty"><i class="fas fa-inbox"></i><p>Tidak ada pengajuan ditemukan.</p></div></td></tr>';
+    return;
+  }
+
+  tb.innerHTML = list.map(i => {
+    const st = i.status || 'pending';
+    // Status di DB: pending / diterima / ditolak
+    const badge = st === 'diterima' ? 'badge-green' : st === 'ditolak' ? 'badge-red' : 'badge-warn';
+    const stText = st === 'diterima' ? 'Diterima' : st === 'ditolak' ? 'Ditolak' : 'Pending';
+    const tgl = i.created_at ? new Date(i.created_at).toLocaleDateString('id-ID') : '-';
+    return `<tr>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;">${esc(i.nomor_pengajuan || i.id?.slice(0,8) || '-')}</span></td>
+      <td><strong>${esc(i.nama_lengkap || '-')}</strong></td>
+      <td style="color:var(--text-muted)">${esc(i.asal_kampus || '-')}</td>
+      <td><span class="badge ${badge}">${stText}</span></td>
+      <td style="color:var(--text-muted);font-size:12px;">${tgl}</td>
+      <td>
+        <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px;" onclick="openInternshipDetail('${i.id}')">
+          <i class="fas fa-eye"></i> Detail
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.saveQuota = async () => {
+  const val = parseInt(document.getElementById('quota-input').value);
+  if (isNaN(val) || val < 1) return showToast('Masukkan angka kuota yang valid (min. 1).', 'error');
+  const { error } = await sb.from('internship_settings').upsert({ id: 1, max_quota: val, updated_at: new Date().toISOString() });
+  if (error) return showToast('Gagal simpan kuota: ' + error.message, 'error');
+  await insertAuditLog('UBAH KUOTA', `Kuota magang diubah menjadi ${val}`);
+  showToast(`Kuota magang berhasil disimpan: ${val} peserta.`);
+};
+
+window.openInternshipDetail = (id) => {
+  const item = allInternships.find(i => i.id === id);
+  if (!item) return;
+  detailInternshipId = id;
+
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }) : '-';
+
+  const fields = [
+    ['No. Pengajuan', item.nomor_pengajuan],
+    ['Nama Lengkap', item.nama_lengkap],
+    ['Email', item.email],
+    ['No. HP', item.no_hp],
+    ['Asal Kampus/Instansi', item.asal_kampus],
+    ['Jurusan', item.jurusan],
+    ['Periode Mulai', fmt(item.periode_mulai)],
+    ['Periode Selesai', fmt(item.periode_selesai)],
+    ['Status', item.status],
+    ['Alasan Penolakan', item.alasan_penolakan],
+    ['Direview oleh', item.reviewed_by],
+    ['Tanggal Review', fmt(item.reviewed_at)],
+  ].filter(([, v]) => v);
+
+  // Link dokumen
+  const docs = [
+    ['Surat Pengantar', item.url_surat_pengantar],
+    ['KTM', item.url_ktm],
+    ['CV', item.url_cv],
+    ['Surat Balasan', item.url_surat_balasan],
+  ].filter(([, v]) => v);
+
+  let docsHtml = '';
+  if (docs.length) {
+    docsHtml = `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Dokumen Terlampir</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${docs.map(([label, url]) =>
+          `<a href="${url}" target="_blank" class="btn btn-ghost" style="padding:5px 10px;font-size:12px;text-decoration:none;">
+            <i class="fas fa-file-arrow-down"></i> ${label}
+          </a>`
+        ).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('internship-detail-content').innerHTML =
+    fields.map(([k, v]) =>
+      `<div style="display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--border);">
+        <span style="min-width:160px;color:var(--text-dim);font-size:12px;font-weight:600;text-transform:uppercase;flex-shrink:0;">${k}</span>
+        <span style="color:var(--text)">${esc(String(v))}</span>
+      </div>`
+    ).join('') + docsHtml;
+
+  const actions = document.getElementById('internship-detail-actions');
+  const st = item.status || 'pending';
+  actions.innerHTML = `
+    <button class="btn btn-ghost" onclick="closeModal('modal-internship-detail')">Tutup</button>
+    ${st !== 'diterima' ? `<button class="btn btn-accent" onclick="updateInternshipStatus('${id}','diterima')"><i class="fas fa-check"></i> Terima</button>` : ''}
+    ${st !== 'ditolak' ? `<button class="btn btn-danger" onclick="promptRejectInternship('${id}')"><i class="fas fa-xmark"></i> Tolak</button>` : ''}
+  `;
+  openModal('modal-internship-detail');
+};
+
+window.promptRejectInternship = (id) => {
+  const item = allInternships.find(i => i.id === id);
+  detailInternshipId = id;
+  document.getElementById('reject-modal-name').textContent = 'Pengajuan: ' + (item?.nama_lengkap || id);
+  document.getElementById('reject-alasan').value = '';
+  openModal('modal-reject');
+};
+
+window.submitReject = async () => {
+  const alasan = document.getElementById('reject-alasan').value.trim();
+  if (!alasan) { showToast('Alasan penolakan wajib diisi!', 'error'); return; }
+  closeModal('modal-reject');
+  await updateInternshipStatus(detailInternshipId, 'ditolak', alasan);
+};
+
+window.updateInternshipStatus = async (id, status, alasan = null) => {
+  const { data: { user } } = await sb.auth.getUser();
+  const payload = {
+    status,
+    reviewed_by: user?.id,
+    reviewed_at: new Date().toISOString(),
+  };
+  if (alasan) payload.alasan_penolakan = alasan;
+
+  const { error } = await sb.from('internship_applications').update(payload).eq('id', id);
+  if (error) return showToast('Gagal: ' + error.message, 'error');
+
+  const item = allInternships.find(i => i.id === id);
+  const label = status === 'diterima' ? 'Diterima' : 'Ditolak';
+  await insertAuditLog(`MAGANG: ${label.toUpperCase()}`, `Pengajuan ${item?.nomor_pengajuan || id} — ${label}`);
+  showToast(`Pengajuan magang berhasil ${label.toLowerCase()}.`);
+  closeModal('modal-internship-detail');
+  loadInternship();
+};
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+async function insertAuditLog(aksi, detail) {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('audit_logs').insert({
+      admin_id: user?.id,
+      admin_name: user?.email?.split('@')[0] || 'Admin',
+      aksi,
+      detail,
+    });
+  } catch (e) { console.warn('audit log gagal:', e); }
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+window.showToast = (msg, type = 'success') => {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+};
+
+window.openModal  = id => document.getElementById(id).classList.remove('hidden');
+window.closeModal = id => document.getElementById(id).classList.add('hidden');
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+});
+
+window.toggleSidebar = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('backdrop').classList.toggle('show');
+};
+window.closeSidebar = () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('show');
+};
+
+// Nav item fix — match by text
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    if (!this.classList.contains('danger')) this.classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════════════════
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('digilok-theme', theme);
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+  }
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.title = theme === 'light' ? 'Mode Gelap' : 'Mode Terang';
+  }
+}
+
+window.toggleTheme = () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+};
+
+// Load saved theme
+const savedTheme = localStorage.getItem('digilok-theme') || 'dark';
+applyTheme(savedTheme);
+
+init();
+</script>
+</body>
+</html>
