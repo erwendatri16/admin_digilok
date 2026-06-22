@@ -589,3 +589,20 @@ applyTheme(savedTheme);
 
 // Run authentication state checks
 init();
+// Fungsi untuk melihat/menyembunyikan password pada form login
+window.toggleLoginPassword = () => {
+  const passwordInput = document.getElementById('login-password');
+  const icon = document.getElementById('toggle-password-icon');
+  
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash'); // Berubah jadi ikon mata dicoret
+    icon.title = "Sembunyikan Password";
+  } else {
+    passwordInput.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye'); // Kembali jadi ikon mata biasa
+    icon.title = "Lihat Password";
+  }
+};
